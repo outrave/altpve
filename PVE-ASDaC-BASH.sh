@@ -836,7 +836,7 @@ function configure_imgdir() {
     }
 
     if [[ "$1" == check-only ]]; then
-        awk '/MemAvailable/ {if($2>16777216) {exit 1} }' /proc/meminfo || \
+        awk '/MemAvailable/ {if($2<8388608) {exit 1} }' /proc/meminfo || \
             { echo_err $'Ошибка: Недостаточно свободной оперативной памяти!\nДля развертывания стенда необходимо как минимум 16 ГБ свободоной ОЗУ'; exit 1; }
         return 0
     fi
@@ -848,7 +848,7 @@ function configure_imgdir() {
 
     if [[ "$1" == add-size ]]; then
         isdigit_check "$2" || { echo "Ошибка: " && exit 1; }
-        awk -v size=$((($2+8388608)/1024)) '/MemAvailable/ {if($2>size) {exit 1} }' /proc/meminfo || \
+        awk -v size=$((($2+8388608)/1024)) '/MemAvailable/ {if($2<size) {exit 1} }' /proc/meminfo || \
             { echo_err $'Ошибка: Недостаточно свободной оперативной памяти!\nДля развертывания стенда необходимо как минимум '$((size/1024/1024))' ГБ свободоной ОЗУ'; exit 1; }
         local size="$( df | awk -v dev="${config_base[mk_tmpfs_imgdir]}" '$6==dev{print $3}' )"
         isdigit_check "$size" || { echo "Ошибка: 1 \$size=$size" && exit 1; }
